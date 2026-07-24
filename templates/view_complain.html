@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grievance Analysis Terminal - NMC</title>
+    <!-- Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+        .navbar-custom { background-color: #11141a; border-bottom: 2px solid #ffc107; }
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+    </style>
+</head>
+<body>
+
+<!-- Top Control Header Bar -->
+<nav class="navbar navbar-dark bg-dark navbar-custom mb-4">
+    <div class="container px-4">
+        <a class="navbar-brand fw-bold text-warning" href="/admin/dashboard"><i class="bi bi-shield-lock-fill"></i> NMC Ticket Verification Desk</a>
+        <a href="/admin/dashboard" class="btn btn-outline-warning btn-sm fw-bold"><i class="bi bi-arrow-left"></i> Control Room</a>
+    </div>
+</nav>
+
+<div class="container px-4">
+    <div class="row g-4">
+        
+        <!-- 📄 LEFT COLUMN: COMPLAINT DETAILED META DATA VIEW -->
+        <div class="col-md-7">
+            <div class="card card-custom p-4 bg-white mb-4">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                    <h4 class="fw-bold text-dark m-0">Ticket Reference: <span class="text-primary">NMC-{{ item.id }}</span></h4>
+                    <span class="badge bg-warning text-dark fw-bold px-3 py-2 rounded-pill shadow-sm">{{ item.status }}</span>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <small class="text-muted d-block uppercase fw-bold" style="font-size:11px;">SUBMITTER NAME</small>
+                        <strong class="text-dark"><i class="bi bi-person-fill"></i> {{ item.citizen_name }}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block uppercase fw-bold" style="font-size:11px;">TIMESTAMP DATE</small>
+                        <strong class="text-secondary"><i class="bi bi-calendar3"></i> {{ item.created_at }}</strong>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block uppercase fw-bold" style="font-size:11px;">CITIZEN EMAIL DIRECTORY</small>
+                    <span class="text-dark font-medium">{{ item.citizen_email }}</span>
+                </div>
+
+                <div class="mb-3 border-top pt-3">
+                    <small class="text-muted d-block uppercase fw-bold" style="font-size:11px;">SUBJECT MATTER TITLE</small>
+                    <h5 class="fw-bold text-dark mt-1">{{ item.title }}</h5>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block uppercase fw-bold" style="font-size:11px;">DETAILED CONTEXT DESCRIPTION</small>
+                    <div class="p-3 bg-light rounded text-secondary mt-1 border" style="white-space: pre-line; line-height: 1.6;">
+                        {{ item.description }}
+                    </div>
+                </div>
+
+                <div class="row pt-2">
+                    <div class="col-6">
+                        <span class="small text-muted d-block fw-bold">AI ROUTED DEPT</span>
+                        <span class="badge bg-dark mt-1 px-3 py-1">{{ item.ai_category }}</span>
+                    </div>
+                    <div class="col-6">
+                        <span class="small text-muted d-block fw-bold">AI URGENCY MATRIX</span>
+                        <span class="badge {% if item.ai_urgency == 'CRITICAL' %}bg-danger{% else %}bg-secondary{% endif %} mt-1 px-3 py-1">{{ item.ai_urgency }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ⚙️ RIGHT COLUMN: ACTION & OPERATIONS FORM PANEL -->
+        <div class="col-md-5">
+            <div class="card card-custom p-4 bg-white shadow-sm position-sticky" style="top: 20px;">
+                <h5 class="fw-bold text-dark mb-3 border-bottom pb-2"><i class="bi bi-sliders text-primary"></i> Operations Terminal</h5>
+                
+                <!-- 🔒 RULE: Agar ticket pehle se Resolved ya Rejected hai toh terminal lock kardo -->
+                {% if item.status in ['Resolved', 'Rejected'] %}
+                    <div class="alert alert-secondary text-center py-4 border shadow-sm rounded">
+                        <i class="bi bi-lock-fill display-6 text-muted d-block mb-2"></i>
+                        <h6 class="fw-bold text-dark">Ticket Closed & Immutable</h6>
+                        <p class="small text-muted mb-0">This complaint has already been marked as <strong>{{ item.status }}</strong>, so it cannot be edited again.</p>
+                    </div>
+                {% else %}
+                    <form action="/admin/complaint/process/{{ item.id }}" method="POST">
+                        
+                        <!-- 1. Dynamic Lifecycle Status Dropdown -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Target Lifecycle Status</label>
+                            <select name="status" id="statusDropdown" class="form-select fw-medium text-dark" required onchange="toggleOfficerDropdown()">
+                                <!-- ⚡ Logic basis current state -->
+                                {% if item.status == 'Submitted' %}
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Rejected">Rejected</option>
+                                {% elif item.status == 'In Progress' %}
+                                    <option value="Resolved">Resolved</option>
+                                {% endif %}
+                            </select>
+                        </div>
+
+                        <!-- 2. Officer/Employee Assignment Dropdown (Corrected Text) -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Assign Complaint to Officer</label>
+                            <select name="officer_id" id="officerDropdown" class="form-select">
+                                <option value="">-- Leave Unassigned --</option>
+                                {% for off in officers %}
+                                <option value="{{ off.id }}" {% if item.assigned_officer_id == off.id %}selected{% endif %}>
+                                    {{ off.full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- 3. Mandatory Justification Track Note -->
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-danger">Mandatory Operations Justification Note</label>
+                            <textarea name="justification" class="form-control" rows="3" placeholder="Explain the reason for status change or assignment update..." required></textarea>
+                            <small class="text-muted" style="font-size:11px;">*This comment logs directly into citizen historical timeline logs.</small>
+                        </div>
+
+                        <!-- Submit Operations -->
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
+                            <i class="bi bi-check-circle-fill me-1"></i> Apply & Dispatch Parameters
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        <!-- ⭐ SCHEMA SYNCED COMPONENT: CITIZEN RATING & REVIEW DISPLAY -->
+{% if item.status == 'Resolved' %}
+<div class="card card-custom p-4 bg-white shadow-sm mt-4">
+    <h5 class="fw-bold text-dark mb-3 border-bottom pb-2 text-success">
+        <i class="bi bi-chat-left-heart-fill"></i> Citizen Review & Feedback
+    </h5>
+    
+    <!-- 🔍 Schema-Matched Check using star_rating and citizen_comment -->
+    {% if item.star_rating or item.citizen_comment %}
+        <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary d-block">Citizen Satisfaction Rating</label>
+            <div class="text-warning fs-4">
+                {% set stars = item.star_rating|int if item.star_rating else 0 %}
+                {% for i in range(stars) %}
+                    <i class="bi bi-star-fill"></i>
+                {% endfor %}
+                {% for i in range(5 - stars) %}
+                    <i class="bi bi-star text-muted"></i>
+                {% endfor %}
+                <span class="text-dark small ms-2 fw-bold">({{ stars }} / 5)</span>
+            </div>
+        </div>
+
+        <div class="mb-0">
+            <label class="form-label small fw-bold text-secondary">Review Comments</label>
+            <div class="p-3 bg-light rounded text-dark border" style="font-style: italic; font-size: 14px; border-left: 4px solid #198754 !important; line-height: 1.6;">
+                "{{ item.citizen_comment if item.citizen_comment else 'No descriptive comments provided by citizen.' }}"
+            </div>
+        </div>
+    {% else %}
+        <!-- Default State Grid Card Panel (If ticket resolved but no review submitted yet) -->
+        <div class="text-center py-5 bg-light rounded border border-dashed">
+            <i class="bi bi-hourglass-split display-6 d-block mb-2 text-warning"></i>
+            <h6 class="fw-bold text-dark mb-1">Waiting for Citizen Review</h6>
+            <p class="small text-muted mb-0 px-3" style="font-size: 12px;">
+                Ticket NMC-{{ item.id }} successfully resolved. Once the citizen submits a review via the user portal, the data will be displayed here in real-time.
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+    </div>
+</div>
+
+<!-- ⚙️ JavaScript to handle Real-time Dropdown Locking Mechanism -->
+<script>
+function toggleOfficerDropdown() {
+    var statusDropdown = document.getElementById("statusDropdown");
+    var officerDropdown = document.getElementById("officerDropdown");
+    
+    if (statusDropdown && officerDropdown) {
+        // Agar admin 'Rejected' select karta hai toh officer field select lock kardo
+        if (statusDropdown.value === "Rejected") {
+            officerDropdown.value = ""; // Reset value
+            officerDropdown.disabled = true;
+        } else {
+            officerDropdown.disabled = false;
+        }
+    }
+}
+
+// Page load hone par check trigger run karein
+window.onload = function() {
+    toggleOfficerDropdown();
+};
+</script>
+
+</body>
+</html>

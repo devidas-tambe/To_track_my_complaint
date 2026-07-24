@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Grievance Tracking Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: sans-serif; }
+        .card-custom { border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e3e6f0; }
+        .status-badge { font-weight: 600; padding: 6px 12px; border-radius: 30px; }
+        .timeline-step { border-left: 3px solid #0d6efd; position: relative; padding-left: 20px; margin-left: 10px; }
+        .timeline-step::before { content: ''; position: absolute; left: -8px; top: 0; width: 13px; height: 13px; border-radius: 50%; background-color: #0d6efd; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/citizen/dashboard"><i class="bi bi-cpu-fill me-2 text-primary"></i>NMC Portal</a>
+        <div class="ms-auto">
+            <a href="/public/insights" class="btn btn-outline-light btn-sm fw-bold"><i class="bi bi-graph-up-arrow me-1"></i> Back to Home</a>
+            <a href="/citizen/file_complaint" class="btn btn-primary btn-sm fw-bold me-2"><i class="bi bi-plus-lg"></i> New Complaint</a>
+            <a href="/logout" class="btn btn-outline-danger btn-sm fw-medium">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if view_mode == 'list' %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark mb-0"><i class="bi bi-speedometer2 text-primary me-2"></i>Welcome to Complaint History</h3>
+    </div>
+    
+    <div class="card card-custom p-3 mb-4 bg-white">
+        <form action="/citizen/dashboard" method="GET" class="row g-2">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Search by keywords..." value="{{ search }}">
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">-- Filter By Status --</option>
+                    <option value="Submitted" {% if current_status == 'Submitted' %}selected{% endif %}>Submitted / Pending</option>
+                    <option value="Under Review" {% if current_status == 'Under Review' %}selected{% endif %}>Under Review</option>
+                    <option value="In Progress" {% if current_status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                    <option value="Resolved" {% if current_status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-dark w-100 fw-medium"><i class="bi bi-filter"></i> Apply</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card card-custom bg-white">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Token ID</th>
+                        <th>Subject Title</th>
+                        <th>AI Routed Category</th>
+                        <th>Status</th>
+                        <th>Date Raised</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in complaints %}
+                    <tr>
+                        <td><span class="fw-bold text-primary">{{ item.tracking_token }}</span></td>
+                        <td><span class="fw-medium text-dark">{{ item.title }}</span></td>
+                        <td><span class="badge bg-secondary text-white">{{ item.ai_category }}</span></td>
+                        <td>
+                            {% if item.status == 'Submitted' %}
+                                <span class="badge bg-warning text-dark status-badge">Submitted</span>
+                            {% elif item.status == 'Resolved' %}
+                                <span class="badge bg-success text-white status-badge">Resolved</span>
+                            {% else %}
+                                <span class="badge bg-info text-dark status-badge">{{ item.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ item.created_at }}</td>
+                        <td>
+                            <a href="/citizen/complaint/{{ item.id }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> View History</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-folder-x display-4"></i>
+                            <p class="mt-2">No complaint records found.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if view_mode == 'detail' %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold"><i class="bi bi-info-circle text-primary"></i> Ticket Details</h3>
+        <a href="/citizen/dashboard" class="btn btn-light border btn-sm">Back </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-7 mb-4">
+            <div class="card card-custom p-4 bg-white">
+                <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
+                    <div>
+                        <h4 class="fw-bold mb-1">{{ complaint.title }}</h4>
+                        <span class="text-muted small">Token: <strong>{{ complaint.tracking_token }}</strong></span>
+                    </div>
+                    <div>
+                        {% if complaint.status == 'Submitted' %}
+                            <a href="/citizen/complaint/edit/{{ complaint.id }}" class="btn btn-sm btn-warning fw-bold"><i class="bi bi-pencil-square"></i> Edit Content</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-secondary" disabled><i class="bi bi-lock-fill"></i> Locked</button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <h6 class="fw-bold text-muted">Description:</h6>
+                <p class="text-dark bg-light p-3 rounded" style="white-space: pre-wrap;">{{ complaint.description }}</p>
+
+                <div class="row g-2 mt-2">
+                    <div class="col-sm-6">
+                        <div class="border p-2 rounded">
+                            <span class="small text-muted d-block">AI Category Match</span>
+                            <span class="fw-bold text-success"><i class="bi bi-cpu"></i> {{ complaint.ai_category }} ({{ complaint.ai_confidence }}%)</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="border p-2 rounded">
+                            <span class="small text-muted d-block">AI Urgency Tag</span>
+                            <span class="fw-bold text-danger"><i class="bi bi-exclamation-octagon"></i> {{ complaint.ai_urgency }}</span>
+                        </div>
+                        <div class="border-top pt-3 mt-4">
+                            <h6 class="fw-bold text-secondary mb-3">Available Lifecycle Actions:</h6>
+    
+                            {% if complaint.status == 'Submitted' %}
+                            <a href="/citizen/complaint/withdraw/{{ complaint.id }}" class="btn btn-outline-danger btn-sm fw-bold"><i class="bi bi-x-circle"></i> Withdraw Ticket</a>
+                            {% endif %}
+
+                            {% if complaint.status == 'In Progress' %}
+                                <form action="/citizen/complaint/escalate/{{ complaint.id }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm fw-bold"><i class="bi bi-lightning-fill"></i> Escalate (SLA Breach)</button>
+                                </form>
+                            {% endif %}
+
+                            {% if complaint.status == 'Resolved' %}
+                                <a href="/citizen/complaint/reopen/{{ complaint.id }}" class="btn btn-outline-warning btn-sm fw-bold text-dark mb-4"><i class="bi bi-arrow-counterclockwise"></i> Issue Not Solved? Reopen Ticket</a>
+        
+                                <div class="card bg-light p-3 border mt-2 shadow-sm">
+                                    <h6 class="fw-bold text-dark"><i class="bi bi-star-fill text-warning"></i> Rate the Resolution Efficiency</h6>
+                                    <form action="/citizen/complaint/rate/{{ complaint.id }}" method="POST" class="mt-2">
+                                        <div class="mb-2">
+                                            <label class="small fw-medium">Select Stars:</label>
+                                            <select name="star_rating" class="form-select form-select-sm w-50" required>
+                                                <option value="5">⭐⭐⭐⭐⭐ (Excellent)</option>
+                                                <option value="4">⭐⭐⭐⭐ (Good)</option>
+                                                <option value="3">⭐⭐⭐ (Average)</option>
+                                                <option value="2">⭐⭐ (Poor)</option>
+                                                <option value="1">⭐ (Worst)</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2">
+                                            <input type="text" name="comment" class="form-control form-control-sm" placeholder="Any final remarks/comments?">
+                                        </div>
+                                        <button type="submit" class="btn btn-success btn-sm fw-medium">Submit Review</button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card card-custom p-4 bg-white">
+                <h5 class="fw-bold mb-4"><i class="bi bi-clock-history text-secondary"></i> Operational Lifecycle Logs</h5>
+                
+                {% for log in history %}
+                <div class="timeline-step mb-3">
+                    <span class="small text-muted d-block">{{ log.changed_at }}</span>
+                    <strong class="text-dark">Status: {{ log.new_status }}</strong>
+                    <p class="small text-secondary mb-0 mt-1">{{ log.note }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if view_mode == 'edit' %}
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-8">
+            <div class="card card-custom p-4 bg-white">
+                <div class="card-body">
+                    <h3 class="card-title fw-bold text-dark mb-2"><i class="bi bi-pencil-square text-warning me-2"></i>Modify / Expand Complaint</h3>
+                    <p class="text-muted small mb-4">You can edit this ticket as long as it is in the Pending status. Once an officer begins processing it, this field will be locked.</p>
+                    
+                    <form action="/citizen/complaint/edit/{{ complaint.id }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Complaint Title</label>
+                            <input type="text" name="title" class="form-control" value="{{ complaint.title }}" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Detailed Description</label>
+                            <textarea name="description" class="form-control" rows="6" required>{{ complaint.description }}</textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="/citizen/complaint/{{ complaint.id }}" class="btn btn-light border">Cancel</a>
+                            <button type="submit" class="btn btn-warning fw-bold px-4">Save Modified Updates</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

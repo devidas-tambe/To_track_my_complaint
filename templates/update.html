@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NMC Node Control - Update Officer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Arial, sans-serif; }
+        .form-card { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background-color: #ffffff; max-width: 600px; margin: 40px auto; }
+        .navbar-custom { background-color: #11141a; border-bottom: 2px solid #ffc107; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark navbar-custom shadow-sm mb-4">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold text-warning" href="/admin/officers">
+            <i class="bi bi-pencil-square"></i> Modify Corporate Roster Entry
+        </a>
+        <a href="/admin/officers" class="btn btn-outline-warning btn-sm fw-bold">
+            <i class="bi bi-arrow-left-short"></i> Back to Roster
+        </a>
+    </div>
+</nav>
+
+<div class="container px-4">
+    <div class="card form-card p-4">
+        <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-person-gear text-success"></i> Edit Officer Parameters Matrix</h5>
+        
+        <form action="/admin/officer/update/{{ officer.id }}" method="POST" class="row g-3">
+            <div class="col-12">
+                <label class="form-label small fw-bold text-secondary">Officer Full Name</label>
+                <input type="text" name="full_name" class="form-control" value="{{ officer.full_name }}" required>
+            </div>
+            
+            <div class="col-12">
+                <label class="form-label small fw-bold text-secondary">Official Corporate Email ID</label>
+                <input type="email" name="email" class="form-control" value="{{ officer.email }}" required>
+            </div>
+            
+            <div class="col-12">
+                <label class="form-label small fw-bold text-secondary">Contact Phone Parameters</label>
+                <input type="text" name="contact" class="form-control" value="{{ officer.contact if officer.contact else '' }}" required>
+            </div>
+            
+            <div class="col-12">
+                <label class="form-label small fw-bold text-secondary">Jurisdictional Corporate Department</label>
+                <select name="department_id" class="form-select" required>
+                    {% for d in departments %}
+                    <option value="{{ d.id }}" {% if d.id == officer.department_id %}selected{% endif %}>{{ d.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-12 mt-4">
+                <button type="submit" class="btn btn-success w-100 fw-bold shadow-sm py-2">Apply Changes & Synchronize Ledger</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

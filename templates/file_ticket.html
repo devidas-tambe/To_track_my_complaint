@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File New Complaint</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: sans-serif; }
+        .card-custom { border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            {% if duplicate %}
+            <div class="alert alert-warning border-warning shadow p-4 mb-4" role="alert">
+                <h4 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Duplicate Alert!</h4>
+                <p>A similar complaint with the same title is already open.:</p>
+                <hr>
+                <p class="mb-2"><strong>Token:</strong> <span class="badge bg-dark">{{ old_token }}</span> | <strong>Status:</strong> <span class="badge bg-info text-dark">{{ old_status }}</span></p>
+                <p class="small text-muted mb-3">Do you still want to file this new issue?</p>
+                
+                <form action="/citizen/file-complaint" method="POST" class="d-inline">
+                    <input type="hidden" name="title" value="{{ form_data.title }}">
+                    <input type="hidden" name="description" value="{{ form_data.description }}">
+                    <input type="hidden" name="force_submit" value="1"> <button type="submit" class="btn btn-danger btn-sm fw-bold">Still Proceed & Submit</button>
+                </form>
+                <a href="/citizen/dashboard" class="btn btn-secondary btn-sm ms-2">Cancel & Back</a>
+            </div>
+            {% endif %}
+
+            <div class="card card-custom p-4 border shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title fw-bold text-dark mb-2"><i class="bi bi-pencil-square text-primary me-2"></i>File a New Complaint</h3>
+                    <p class="text-muted small mb-4">Feature 03: You don't need to select a department or priority. Our Zero-Shot AI will understand the context of your text.</p>
+                    
+                    <form action="/citizen/file_complaint" method="POST">
+                        <input type="hidden" name="force_submit" value="0">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Complaint Title / Short Subject</label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g., Streetlight broken or Open drainage pipeline" value="{% if form_data %}{{ form_data.title }}{% endif %}" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Describe your issue in plain language</label>
+                            <textarea name="description" class="form-control" rows="6" placeholder="Write down exactly what the issue is. Our AI model will process it..." required>{% if form_data %}{{ form_data.description }}{% endif %}</textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="/citizen/dashboard" class="btn btn-light border fw-medium">Cancel</a>
+                            <button type="submit" class="btn btn-primary fw-bold px-4 shadow-sm"><i class="bi bi-cpu-fill me-2"></i> Submit & Run AI Routing</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

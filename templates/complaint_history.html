@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NMC Archive Registry - Complaint History</title>
+    <!-- Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .navbar-custom { background-color: #11141a; border-bottom: 2px solid #ffc107; }
+        .filter-card { border: none; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+    </style>
+</head>
+<body>
+
+<!-- Top Fixed Command Header -->
+<nav class="navbar navbar-dark bg-dark navbar-custom shadow-sm mb-4">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold text-warning" href="/admin/dashboard">
+            <i class="bi bi-archive-fill text-warning"></i> NMC Processed History Archives
+        </a>
+        <a href="/admin/dashboard" class="btn btn-outline-warning btn-sm fw-bold">
+            <i class="bi bi-speedometer2"></i> Main Control Room
+        </a>
+    </div>
+</nav>
+
+<div class="container-fluid px-4">
+
+    <!-- 🎛️ TWO DYNAMIC DROPDOWN SHORTLIST FILTERS INPUT ENGINE -->
+    <div class="card filter-card p-3 bg-white mb-4">
+        <form action="/admin/complaint-history" method="GET" class="row g-3 align-items-end">
+            
+            <!-- Filter Box 1: Short by Department -->
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-secondary"><i class="bi bi-building"></i> Filter According to Department</label>
+                <select name="dept_filter" class="form-select form-select-sm">
+                    <option value="">-- All Corporate Departments --</option>
+                    {% for d in depts %}
+                    <option value="{{ d.ai_category }}" {% if d.ai_category == current_dept %}selected{% endif %}>
+                        {{ d.ai_category }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filter Box 2: Short by Operational Status Lifecycle -->
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-secondary"><i class="bi bi-ui-checks-grid"></i> Filter According to Lifecycle Status</label>
+                <select name="status_filter" class="form-select form-select-sm">
+                    <option value="">-- All Active Lifecycle States (Excluding Submitted) --</option>
+                    <option value="In Progress" {% if current_status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                    <option value="Resolved" {% if current_status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                    <option value="Rejected" {% if current_status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+
+            <!-- Execution Controls Buttons -->
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-dark btn-sm fw-bold flex-grow-1">
+                    <i class="bi bi-filter"></i> Apply Sort Filter
+                </button>
+                <a href="/admin/complaint-history" class="btn btn-secondary btn-sm fw-bold px-3" title="Clear All Filters">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </a>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- 📑 CLEAN MASTER RECORDS SEARCH ARCHIVE GRID TABLE -->
+    <div class="card border-0 shadow-sm p-3 bg-white mb-5">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Token ID</th>
+                        <th>Citizen Details</th>
+                        <th>Complaint Context Structure</th>
+                        <th>Department</th>
+                        <th>Urgency Index</th>
+                        <th>Last Action Timestamp</th>
+                        <th>Processing Status</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in complaints %}
+                    <tr>
+                        <td><span class="fw-bold text-primary">NMC-{{ item.id }}</span></td>
+                        <td><strong class="text-dark d-block">{{ item.citizen_name }}</strong></td>
+                        <td>
+                            <strong class="d-block text-dark">{{ item.title }}</strong>
+                            <small class="text-muted text-truncate d-block" style="max-width: 250px;">{{ item.description }}</small>
+                        </td>
+                        <td><span class="badge bg-secondary">{{ item.ai_category }}</span></td>
+                        <td>
+                            <span class="badge {% if item.ai_urgency == 'CRITICAL' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ item.ai_urgency }}
+                            </span>
+                        </td>
+                        <td><small class="text-secondary fw-medium">{{ item.updated_at }}</small></td>
+                        <td>
+                            <span class="badge 
+                                {% if item.status == 'In Progress' %}bg-primary
+                                {% elif item.status == 'Resolved' %}bg-success
+                                {% else %}bg-danger{% endif %} fw-bold px-3 py-1 rounded-pill shadow-xs">
+                                {{ item.status }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <a href="/admin/complaint/view/{{ item.id }}" class="btn btn-outline-dark btn-sm fw-bold">
+                                <i class="bi bi-folder2-open"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted fw-medium">
+                            <i class="bi bi-clipboard-x text-muted display-6 d-block mb-2"></i>
+                            No complaints match the specified structural query metrics.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

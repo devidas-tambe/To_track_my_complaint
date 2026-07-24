@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NMC Node Master Control - Departments Directory</title>
+    <!-- Bootstrap 5 & Vector Icons Core Directory -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Arial, sans-serif; }
+        .navbar-custom { background-color: #11141a; border-bottom: 2px solid #ffc107; }
+        .directory-card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); background-color: #ffffff; }
+        .sla-badge { font-weight: bold; background-color: #fee2e2; color: #dc3545; padding: 6px 12px; border-radius: 6px; font-size: 12px; }
+        .workload-indicator { font-size: 11px; font-weight: bold; padding: 4px 8px; border-radius: 20px; }
+    </style>
+</head>
+<body>
+
+<!-- Navigation Header Architecture Bar -->
+<nav class="navbar navbar-dark bg-dark navbar-custom shadow-sm mb-4">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold text-warning" href="/admin/dashboard">
+            <i class="bi bi-diagram-3-fill text-warning"></i> NMC Department Grid Architecture
+        </a>
+        <a href="/admin/dashboard" class="btn btn-outline-warning btn-sm fw-bold">
+            <i class="bi bi-speedometer2"></i> Main Control Room
+        </a>
+    </div>
+</nav>
+
+<div class="container-fluid px-4">
+    <div class="row g-4 mb-5">
+        
+        <!-- 🏢 LEFT SIDE PANEL: REGISTERED DEPARTMENTS MATRIX & SLA CONSTRAINTS -->
+        <div class="col-lg-6">
+            <div class="card directory-card p-4">
+                <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">
+                    <i class="bi bi-buildings text-primary"></i> Municipal Corporate Verticals Directory
+                </h5>
+                <p class="text-muted small">List of active city nodes, their dynamic SLA resolution metrics (in days), and real-time network traffic analysis values.</p>
+                
+                <div class="table-responsive mt-2">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Department Nomenclature</th>
+                                <th class="text-center">Resolution SLA Limit</th>
+                                <th class="text-center">Total Intake</th>
+                                <th class="text-center">Solved Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dept in departments %}
+                            <tr>
+                                <td>
+                                    <strong class="text-dark d-block" style="font-size: 14px;">{{ dept.name }}</strong>
+                                    <small class="text-muted" style="font-size: 11px;">Active System Component Node #{{ dept.id }}</small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="sla-badge shadow-xs"><i class="bi bi-clock-history"></i> {{ dept.default_sla_days }} Days</span>
+                                </td>
+                                <td class="text-center"><span class="badge bg-secondary px-2.5 py-1.5">{{ dept.total_traffic }} Tickets</span></td>
+                                <td class="text-center text-success fw-bold" style="font-size: 14px;">{{ dept.total_resolved }} Fixed</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted small">No dynamic structural nodes active inside database environment.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 👥 RIGHT SIDE PANEL: INTERNAL FIELD OFFICERS DIRECTORY & LIVE BURDEN DATA -->
+        <div class="col-lg-6">
+            <div class="card directory-card p-4">
+                <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">
+                    <i class="bi bi-people-fill text-success"></i> Active Field Officers Jurisdiction Matrix
+                </h5>
+                <p class="text-muted small"> Operational registry of authorized field employees assigned according to the jurisdiction map, with real-time tracking of their current workload index.</p>
+
+                <div class="table-responsive mt-2">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Officer Name & Credentials</th>
+                                <th>Assigned Ward / Jurisdiction</th>
+                                <th class="text-center">Active Burden Load</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for officer in officers %}
+                            <tr>
+                                <td>
+                                    <strong class="text-dark d-block" style="font-size: 14px;">{{ officer.full_name }}</strong>
+                                    <small class="text-muted" style="font-size: 11px;"><i class="bi bi-envelope"></i> {{ officer.email }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-dark px-2.5 py-1.5" style="font-size: 11px;">{{ officer.department_name if officer.department_name else 'Global Dynamic Pool' }}</span>
+                                </td>
+                                <td class="text-center">
+                                    {% if officer.active_load > 3 %}
+                                        <span class="badge bg-danger workload-indicator px-3"><i class="bi bi-exclamation-triangle-fill"></i> {{ officer.active_load }} Heavy Load</span>
+                                    {% else %}
+                                        <span class="badge bg-success workload-indicator px-3"><i class="bi bi-check-circle-fill"></i> {{ officer.active_load }} Stable</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted small">No authorized officers mapped inside registry directory index.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

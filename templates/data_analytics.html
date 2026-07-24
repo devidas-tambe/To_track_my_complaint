@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NMC System Intelligence & Data Analytics</title>
+    <!-- Bootstrap 5 & Icons Core Directory -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Arial, sans-serif; }
+        .navbar-custom { background-color: #11141a; border-bottom: 2px solid #ffc107; }
+        .chart-card { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); background-color: #ffffff; }
+        .metric-badge-box { border-radius: 8px; border: 1px solid #e2e8f0; text-align: center; padding: 12px; background-color: #f8fafc; }
+        .btn-download-pdf { background-color: #dc3545; color: white; border: none; font-weight: bold; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-download-pdf:hover { background-color: #bd2130; color: white; }
+    </style>
+</head>
+<body>
+
+<!-- Navigation Header Architecture Bar -->
+<nav class="navbar navbar-dark bg-dark navbar-custom shadow-sm mb-4">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold text-warning" href="/admin/dashboard">
+            <i class="bi bi-bar-chart-steps text-warning"></i> NMC Municipal Telemetry Analytics
+        </a>
+        <a href="/admin/dashboard" class="btn btn-outline-warning btn-sm fw-bold">
+            <i class="bi bi-speedometer2"></i> Main Control Room
+        </a>
+    </div>
+</nav>
+
+<div class="container-fluid px-4">
+    
+    <!-- PDF Generation Download Action Module Box Header -->
+    <div class="card chart-card p-3 mb-4 text-center d-flex flex-row align-items-center justify-content-between">
+        <div>
+            <h6 class="fw-bold text-dark mb-1">Corporate Ledger Records Downloader Module</h6>
+            <p class="text-muted small mb-0"> Scan the system database parameters and prepare a printable PDF registry archive of all complaints with a fixed (resolved) status.</p>
+        </div>
+        <a href="/admin/analytics/download-pdf" class="btn btn-download-pdf shadow-sm">
+            <i class="bi bi-file-earmark-pdf-fill"></i> Export Solved Registry Ledger to PDF
+        </a>
+    </div>
+
+    <!-- 📊 DATA ANALYSIS DIAGRAM DYNAMIC GRID PANEL -->
+    <div class="row g-4 mb-5">
+        
+        <!-- Graph Render Module 1: Dynamic Department Selector & Bar Plot Framework -->
+        <div class="col-lg-7">
+            <div class="card chart-card p-4 h-100">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center border-bottom pb-3 mb-3 gap-2">
+                    <h6 class="fw-bold text-secondary m-0"><i class="bi bi-graph-up text-primary"></i> Dynamic Department Load Ratio Engine</h6>
+                    
+                    <!-- 🎛️ DYNAMIC DROPDOWN SELECTOR FORM -->
+                    <form action="/admin/analytics" method="GET" id="deptSelectorForm" class="d-flex align-items-center gap-1">
+                        <select name="target_dept_filter" class="form-select form-select-sm fw-bold border-primary text-dark" style="min-width: 220px;" onchange="document.getElementById('deptSelectorForm').submit();">
+                            {% for dept_item in depts_list %}
+                            <option value="{{ dept_item }}" {% if dept_item == current_active_dept %}selected{% endif %}>
+                                {{ dept_item }}
+                            </option>
+                            {% else %}
+                            <option value="">-- No Departments Found --</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+
+                <!-- Live Python Seaborn Render Img Box -->
+                <div class="d-flex align-items-center justify-content-center p-2 bg-light rounded border mb-3">
+                    <img src="data:image/png;base64,{{ chart_bar }}" alt="Department Intake Matrix Graph" class="img-fluid rounded shadow-sm">
+                </div>
+
+                <!-- 📑 DYNAMIC LIVE DATA NUMBER COUNTER GRID DISPLAY (AS REQUESTED) -->
+                <div class="border-top pt-3">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-list-ol text-secondary"></i> Live Registry Metrics: <u>{{ current_active_dept }}</u></h6>
+                    <div class="row g-2">
+                        <div class="col-6 col-sm-2.4 flex-grow-1">
+                            <div class="metric-badge-box">
+                                <small class="text-muted d-block fw-bold" style="font-size:11px;">TOTAL CASES</small>
+                                <h4 class="fw-bold text-dark m-0 mt-1">{{ numerical_stats.total }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-2.4 flex-grow-1">
+                            <div class="metric-badge-box" style="border-left: 3px solid #ffc107;">
+                                <small class="text-warning-emphasis d-block fw-bold" style="font-size:11px;">PENDING INBOX</small>
+                                <h4 class="fw-bold text-warning-emphasis m-0 mt-1">{{ numerical_stats.pending }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-2.4 flex-grow-1">
+                            <div class="metric-badge-box" style="border-left: 3px solid #0dcaf0;">
+                                <small class="text-info-emphasis d-block fw-bold" style="font-size:11px;">IN PROGRESS</small>
+                                <h4 class="fw-bold text-info-emphasis m-0 mt-1">{{ numerical_stats.progress }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-2.4 flex-grow-1">
+                            <div class="metric-badge-box" style="border-left: 3px solid #198754;">
+                                <small class="text-success d-block fw-bold" style="font-size:11px;">SOLVED / FIXED</small>
+                                <h4 class="fw-bold text-success m-0 mt-1">{{ numerical_stats.resolved }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-2.4 flex-grow-1">
+                            <div class="metric-badge-box" style="border-left: 3px solid #dc3545;">
+                                <small class="text-danger d-block fw-bold" style="font-size:11px;">REJECTED AUDIT</small>
+                                <h4 class="fw-bold text-danger m-0 mt-1">{{ numerical_stats.rejected }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Graph Render Module 2: Department-wise Percentage Distribution Pie Chart (Sizing Optimized) -->
+        <div class="col-lg-5">
+            <div class="card chart-card p-4 text-center h-100">
+                <h6 class="fw-bold text-secondary text-start mb-3 border-bottom pb-2">
+                    <i class="bi bi-pie-chart-fill text-warning"></i> Town Portal Share: Pie Telemetry Chart
+                </h6>
+                <!-- bg-light overflow handle block -->
+                <div class="d-flex align-items-center justify-content-center p-2 bg-light rounded border" style="overflow-x: auto;">
+                    <img src="data:image/png;base64,{{ chart_pie }}" alt="Department Percentage Analysis Chart" class="img-fluid rounded shadow-sm" style="max-height: 400px; object-fit: contain;">
+                </div>
+                <div class="mt-3 text-start">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle"></i> Department names are mapped to colors on the right scale side of the registry list. Chart displays only dynamic percentage ratios (`%`).
+                    </small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
