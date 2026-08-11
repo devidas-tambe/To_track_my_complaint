@@ -66,7 +66,7 @@ def admin_login():
             
             flash(f"🔑 Authorization Granted. Welcome {admin_user['full_name']}!", "success")
             return redirect(url_for('admin_dashboard'))
-        else:
+        else: 
             flash("❌ Access Denied: Invalid Credentials.", "danger")
             
     return render_template('admin_login.html')
