@@ -16,7 +16,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
-
+ 
 app = Flask(__name__)
 app.secret_key = "nashik_secret_key" # Flash messages dikhane ke liye zaroori hai
 DB_NAME = "citizen_complaints.db"
