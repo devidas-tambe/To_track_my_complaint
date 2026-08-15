@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.secret_key = "nashik_secret_key" # Flash messages dikhane ke liye zaroori hai
 DB_NAME = "citizen_complaints.db"
 
-# Password ko secure (SHA-256) banane ka function
+# Password ko secure (SHA-256) banane ka function .
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
