@@ -8,7 +8,7 @@ from io import StringIO
 
  
  
-app = Flask(__name__)
+app = Flask(__name__) 
 app.secret_key = "nashik_secret_key" # Flash messages dikhane ke liye zaroori hai
 DB_NAME = "citizen_complaints.db"
 
