@@ -4,7 +4,7 @@ DB_NAME = "citizen_complaints.db"
 
 try:
     conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
+    cursor = conn.cursor() 
     
     # staff table mein contact column add karne ka SQL query
     cursor.execute("ALTER TABLE staff ADD COLUMN contact TEXT;")
