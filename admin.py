@@ -5,18 +5,18 @@ import secrets              # 💥 NEW: Unique token generator ke liye
 from transformers import pipeline  # 💥 NEW: Zero-Shot AI Core ke liye
 import csv
 from io import StringIO
-import io 
+import io
 import base64
-import pandas as pd 
-import matplotlib 
+import pandas as pd
+import matplotlib
 matplotlib.use('Agg')  # Non-GUI terminal backend lock taaki threads clash na ho
 import matplotlib.pyplot as plt
 import seaborn as sns
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle 
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
- 
+
 app = Flask(__name__)
 app.secret_key = "nashik_secret_key" # Flash messages dikhane ke liye zaroori hai
 DB_NAME = "citizen_complaints.db"
@@ -26,8 +26,7 @@ DB_NAME = "citizen_complaints.db"
 # ═══════════════════════════════════════════════════════════
 @app.route('/')
 def index():
-    # Jaise hi aap http://127.0.0.1:1000/ run karoge, 
-    # yeh route auto-trigger ho kar aapko seedhe admin login page par dispatch kar dega.
+    # when user visits the base URL, redirect them to the admin login page
     return redirect(url_for('admin_login'))
 
 # ═══════════════════════════════════════════════════════════
@@ -66,7 +65,7 @@ def admin_login():
             
             flash(f"🔑 Authorization Granted. Welcome {admin_user['full_name']}!", "success")
             return redirect(url_for('admin_dashboard'))
-        else: 
+        else:
             flash("❌ Access Denied: Invalid Credentials.", "danger")
             
     return render_template('admin_login.html')
