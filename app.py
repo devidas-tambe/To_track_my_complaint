@@ -4,15 +4,16 @@ import hashlib
 import secrets              # 💥 NEW: Unique token generator ke liye
 from transformers import pipeline  # 💥 NEW: Zero-Shot AI Core ke liye
 import csv
-from io import StringIO 
- 
-  
- 
-app = Flask(__name__) 
+from io import StringIO
+
+# d@gmail.com
+# @123
+
+app = Flask(__name__)
 app.secret_key = "nashik_secret_key" # Flash messages dikhane ke liye zaroori hai
 DB_NAME = "citizen_complaints.db"
 
-# Password ko secure (SHA-256) banane ka function .
+# Password ko secure (SHA-256) banane ka function
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -50,11 +51,11 @@ def register():
                 VALUES (?, ?, ?, ?, ?);
             """, (full_name, email, phone, p_hash, city))
             conn.commit()
-            flash("Registration safal raha! Aap account ban chuka hai.", "success")
+            flash("Registration successful! You have been registered.", "success")
             return redirect(url_for('login')) # Sahi hone par login page par bhej dega
         except sqlite3.IntegrityError:
             # Agar email pehle se database mein hoga toh yeh error aayega
-            flash("Yeh Email ID pehle se registered hai!", "danger")
+            flash("This email is already registered!", "danger")
         finally:
             conn.close()
             
@@ -87,7 +88,7 @@ def login():
             flash(f"Welcome back, {user['full_name']}!", "success")
             return redirect(url_for('public_insights'))
         else:
-            flash("Galat Email ya Password! Kripya dubara koshish karein.", "danger")
+            flash("Invalid Email or Password! Please try again.", "danger")
             
     return render_template('login.html')
 
