@@ -17,7 +17,7 @@ DB_NAME = "citizen_complaints.db"
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-# 🌐 1. Home Page Route
+# 🌐 1. Home Page Route.
 # 🌐 1. Home Page Route connected with separate index.html
 @app.route('/')
 def home():
