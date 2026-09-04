@@ -31,7 +31,7 @@ def home():
 # 🌐 2. Register Route (GET yani page dikhana, POST yani form submit hona)
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
+    if request.method == 'POST':  
         # Form se data nikalna
         full_name = request.form['full_name']
         email = request.form['email']
